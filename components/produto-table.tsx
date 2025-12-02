@@ -77,11 +77,13 @@ export function ProdutoTable({ produtos, onEdit, onRefresh }: ProdutoTableProps)
             {produtos.map((produto) => (
               <tr key={produto.id} className="hover:bg-slate-700/20 transition-colors border-slate-700/30">
                 <td className="px-6 py-4 text-sm text-slate-300">#{produto.id}</td>
-                <td className="px-6 py-4 text-sm font-medium text-white">{produto.nomeProduto}</td>
+                <td className="px-6 py-4 text-sm font-medium text-white">
+                  {produto.nomeProduto || produto.nome_produto}
+                </td>
                 <td className="px-6 py-4 text-sm text-blue-400 font-semibold">{formatPrice(produto.preco)}</td>
                 <td className="px-6 py-4 text-sm text-slate-400 max-w-xs truncate">{produto.descricao || "-"}</td>
                 <td className="px-6 py-4 text-sm text-slate-500">
-                  {formatDate(produto.dataCriacao || produto.created_at)}
+                  {formatDate(produto.created_at || produto.dataCriacao)}
                 </td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex justify-center gap-2">
