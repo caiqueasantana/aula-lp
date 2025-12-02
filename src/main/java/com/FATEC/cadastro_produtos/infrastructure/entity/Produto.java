@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 /**
  * Entidade que representa um Produto no sistema.
- * Mapeada para a tabela 'produto' no banco de dados.
+ * Mapeada para a tabela 'produtos' no banco de dados.
  */
 @Getter
 @Setter
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "produto", uniqueConstraints = @UniqueConstraint(columnNames = "nome_produto"))
+@Table(name = "produtos", uniqueConstraints = @UniqueConstraint(columnNames = "nome_produto"))
 public class Produto {
 
     @Id
