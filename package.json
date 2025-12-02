@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate-types": "npx supabase gen types typescript --project-id \"swreilkmkeevyiisjfqq\" > lib/types/database.ts",
+    "prebuild": "npm run generate-types || true",
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
@@ -57,6 +59,7 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
     "sonner": "^1.7.4",
+    "supabase": "^2.65.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
