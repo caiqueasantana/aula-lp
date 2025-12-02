@@ -26,7 +26,7 @@ public class Produto {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "ID único do produto")
     private Integer id;
 
-    @Column(name = "nome_produto", nullable = false, length = 100)
+    @Column(name = "nomeProduto", nullable = false, length = 100)
     @NotBlank(message = "Nome do produto não pode ser vazio")
     @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     @Schema(description = "Nome único do produto", example = "Notebook Dell")
