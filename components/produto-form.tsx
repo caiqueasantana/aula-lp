@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { AlertCircle, Loader2 } from "lucide-react"
+import { produtosService } from "@/lib/produtos-service"
 
 interface ProdutoFormProps {
   produto?: any
@@ -62,10 +63,24 @@ export function ProdutoForm({ produto, onSubmit }: ProdutoFormProps) {
 
     try {
       setLoading(true)
-      await onSubmit({
-        ...formData,
+      const dados = {
+        nomeProduto: formData.nomeProduto,
         preco: Number.parseFloat(formData.preco),
-      })
+        descricao: formData.descricao,
+      }
+
+      if (produto) {
+        console.log("[v0] Atualizando produto ID:", produto.id)
+        await produtosService.atualizar(produto.id, dados)
+      } else {
+        console.log("[v0] Criando novo produto")
+        await produtosService.criar(dados)
+      }
+
+      await onSubmit(dados)
+    } catch (error: any) {
+      console.error("[v0] Erro no handleSubmit:", error)
+      setErrors({ submit: error.message || "Erro ao salvar produto" })
     } finally {
       setLoading(false)
     }
@@ -139,6 +154,13 @@ export function ProdutoForm({ produto, onSubmit }: ProdutoFormProps) {
           </div>
         )}
       </div>
+
+      {errors.submit && (
+        <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <AlertCircle className="text-red-400 mt-0.5 flex-shrink-0" size={20} />
+          <p className="text-red-400 text-sm">{errors.submit}</p>
+        </div>
+      )}
 
       <Button
         type="submit"

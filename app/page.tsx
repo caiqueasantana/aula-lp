@@ -5,6 +5,7 @@ import { ProdutoTable } from "@/components/produto-table"
 import { ProdutoModal } from "@/components/produto-modal"
 import { Button } from "@/components/ui/button"
 import { Plus, Loader2, Package } from "lucide-react"
+import { getSupabaseClient } from "@/lib/supabase"
 
 export default function Home() {
   const [produtos, setProdutos] = useState([])
@@ -13,19 +14,22 @@ export default function Home() {
   const [editingProduto, setEditingProduto] = useState(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api/v1"
-
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`${API_URL}/produtos/listar/todos`)
-        if (response.ok) {
-          const data = await response.json()
+        const supabase = getSupabaseClient()
+        const { data, error } = await supabase.from("produtos").select("*").order("id", { ascending: false })
+
+        if (error) {
+          console.error("Erro ao buscar produtos:", error)
+          setProdutos([])
+        } else {
           setProdutos(data || [])
         }
       } catch (error) {
         console.error("Erro ao buscar produtos:", error)
+        setProdutos([])
       } finally {
         setLoading(false)
       }
@@ -44,7 +48,7 @@ export default function Home() {
     setEditingProduto(null)
   }
 
-  const handleSucess = () => {
+  const handleSuccess = () => {
     setRefreshTrigger((prev) => prev + 1)
     handleCloseModal()
   }
@@ -77,7 +81,7 @@ export default function Home() {
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-              }).format(produtos.reduce((acc, p) => acc + (p.preco || 0), 0))}
+              }).format(produtos.reduce((acc, p: any) => acc + (p.preco || 0), 0))}
             </p>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-6">
@@ -134,7 +138,12 @@ export default function Home() {
         )}
 
         {/* Modal */}
-        <ProdutoModal isOpen={showModal} onClose={handleCloseModal} onSuccess={handleSucess} produto={editingProduto} />
+        <ProdutoModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          onSuccess={handleSuccess}
+          produto={editingProduto}
+        />
       </div>
     </main>
   )

@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ProdutoForm } from "./produto-form"
 import { useState } from "react"
 import { AlertCircle } from "lucide-react"
+import { getSupabaseClient } from "@/lib/supabase"
 
 interface ProdutoModalProps {
   isOpen: boolean
@@ -15,26 +16,17 @@ interface ProdutoModalProps {
 export function ProdutoModal({ isOpen, onClose, onSuccess, produto }: ProdutoModalProps) {
   const [error, setError] = useState("")
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api/v1"
-
   const handleSubmit = async (formData: any) => {
     try {
       setError("")
+      const supabase = getSupabaseClient()
 
-      const url = produto ? `${API_URL}/produtos/${produto.id}` : `${API_URL}/produtos`
-      const method = produto ? "PUT" : "POST"
+      const { data, error: supabaseError } = produto
+        ? await supabase.from("produtos").update(formData).eq("id", produto.id).select()
+        : await supabase.from("produtos").insert([formData]).select()
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || `Erro ao ${produto ? "atualizar" : "criar"} produto`)
+      if (supabaseError) {
+        throw new Error(supabaseError.message || `Erro ao ${produto ? "atualizar" : "criar"} produto`)
       }
 
       onSuccess()

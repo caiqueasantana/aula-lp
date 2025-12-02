@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { produtosService } from "@/lib/produtos-service"
 
 interface ProdutoTableProps {
   produtos: any[]
@@ -22,24 +23,19 @@ interface ProdutoTableProps {
 export function ProdutoTable({ produtos, onEdit, onRefresh }: ProdutoTableProps) {
   const [deleting, setDeleting] = useState<number | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api/v1"
+  const [error, setError] = useState("")
 
   const handleDelete = async (id: number) => {
     try {
       setDeleting(id)
-      const response = await fetch(`${API_URL}/produtos/${id}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        onRefresh()
-      } else {
-        alert("Erro ao deletar produto")
-      }
-    } catch (error) {
-      console.error("Erro:", error)
-      alert("Erro ao deletar produto")
+      setError("")
+      console.log("[v0] Iniciando deleção de produto ID:", id)
+      await produtosService.deletar(id)
+      console.log("[v0] Produto deletado com sucesso")
+      onRefresh()
+    } catch (error: any) {
+      console.error("[v0] Erro ao deletar:", error)
+      setError(error.message || "Erro ao deletar produto")
     } finally {
       setDeleting(null)
       setDeleteId(null)
@@ -84,7 +80,9 @@ export function ProdutoTable({ produtos, onEdit, onRefresh }: ProdutoTableProps)
                 <td className="px-6 py-4 text-sm font-medium text-white">{produto.nomeProduto}</td>
                 <td className="px-6 py-4 text-sm text-blue-400 font-semibold">{formatPrice(produto.preco)}</td>
                 <td className="px-6 py-4 text-sm text-slate-400 max-w-xs truncate">{produto.descricao || "-"}</td>
-                <td className="px-6 py-4 text-sm text-slate-500">{formatDate(produto.dataCriacao)}</td>
+                <td className="px-6 py-4 text-sm text-slate-500">
+                  {formatDate(produto.dataCriacao || produto.created_at)}
+                </td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex justify-center gap-2">
                     <Button
@@ -111,6 +109,12 @@ export function ProdutoTable({ produtos, onEdit, onRefresh }: ProdutoTableProps)
           </tbody>
         </table>
       </div>
+
+      {error && (
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400 text-sm">{error}</p>
+        </div>
+      )}
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent className="bg-slate-800 border-slate-700">
