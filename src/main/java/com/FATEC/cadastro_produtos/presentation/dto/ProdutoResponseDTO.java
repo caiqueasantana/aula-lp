@@ -27,8 +27,8 @@ public class ProdutoResponseDTO {
     private String descricao;
 
     @Schema(description = "Data de criação", example = "2024-12-02T10:30:00")
-    private LocalDateTime dataCriacao;
+    private LocalDateTime created_at;
 
     @Schema(description = "Data da última atualização", example = "2024-12-02T10:30:00")
-    private LocalDateTime dataAtualizacao;
+    private LocalDateTime updated_at;
 }

@@ -1,4 +1,4 @@
-package com.FATEC.cadastro_produtos.business;
+package com.FATEC.cadastro_produtos.service;
 
 import com.FATEC.cadastro_produtos.infrastructure.entity.Produto;
 import com.FATEC.cadastro_produtos.infrastructure.exception.ProdutoNaoEncontradoException;
@@ -63,7 +63,7 @@ public class ProdutosService {
         validarStringVazia(nome_produto, "Nome do produto");
         Produto produto = repository.findByNomeProdutoIgnoreCase(nome_produto.trim())
                 .orElseThrow(() -> new ProdutoNaoEncontradoException(
-                        String.format("Produto '%s' não encontrado", nomeProduto)
+                        String.format("Produto '%s' não encontrado", nome_produto)
                 ));
         return converterParaResponseDTO(produto);
     }
@@ -156,8 +156,8 @@ public class ProdutosService {
                 .nome_produto(produto.getNome_produto())
                 .preco(produto.getPreco())
                 .descricao(produto.getDescricao())
-                .dataCriacao(produto.getDataCriacao())
-                .dataAtualizacao(produto.getDataAtualizacao())
+                .created_at(produto.getDataCriacao())
+                .updated_at(produto.getDataAtualizacao())
                 .build();
     }
 }

@@ -1,137 +1,188 @@
-# FATEC CARAPICUÍBA
+# 📦 Sistema de Cadastro de Produtos
 
-## Relatório Técnico: Desenvolvimento de um Sistema CRUD utilizando Spring Boot e PostgreSQL
+**Aplicação full-stack** para gerenciar produtos com **Java Spring Boot** (backend), **Next.js** (frontend) e **PostgreSQL/Supabase** (banco de dados).
 
-### Integrantes
+---
+
+## 📋 Equipe
 
 - Caique dos Anjos
-- João Vitor Monteiro Correa
+- João Vitor Monteiro Correa  
 - Henrique Sousa Melo
 - Pablo Araújo
 
 ---
 
-### Carapicuíba - São Paulo  
-2025
+## 📂 Arquitetura
 
-
-## 1. Introdução
-
-Este relatório apresenta o desenvolvimento de um sistema CRUD (Create, Read, Update, Delete) para cadastro e gerenciamento de produtos, implementado como parte de um projeto acadêmico utilizando Java, Spring Boot e PostgreSQL. 
-
-O objetivo foi construir uma aplicação web funcional, estruturada em camadas, com persistência de dados e endpoints REST.
-
-#### 1.1 Contribuições Individuais
-
-- **João**: Configuração inicial do projeto (Maven, dependências, properties) e desenvolvimento da camada Controller.
-- **Pablo**: Modelagem da entidade Produto e integração com o banco de dados PostgreSQL.
-- **Henrique**: Desenvolvimento da camada Service, implementação de regras de negócio, validações e tratamento de exceções.
-- **Caique**: Desenvolvimento do Front-End para testes da API REST.
-
----
-
-## 2. Tecnologias Utilizadas
-
-- **Java 21**: Linguagem principal.
-- **Spring Boot**: Framework para criar aplicações standalone.
-- **Spring Web**: Exposição dos endpoints REST.
-- **Spring Data JPA / Hibernate**: Persistência e ORM.
-- **PostgreSQL**: Banco de dados relacional.
-- **Maven**: Gerenciador de dependências e build.
-- **Lombok**: Redução de boilerplate.
-
----
-
-## 3. Arquitetura do Sistema
-
-O projeto segue a arquitetura em camadas:
-
-- **Controller** (`controller/`): Expõe os endpoints REST com documentação Swagger/OpenAPI e valida requisições.
-- **Service** (`Service/`): Centraliza as regras de negócio, validações e tratamento de exceções customizadas.
-- **DTO** (`presentation/dto/`): Define objetos de transferência de dados (ProdutoRequestDTO e ProdutoResponseDTO).
-- **Entity** (`infrastructure/entity/`): Define a entidade Produto com atributos mapeados para o banco de dados.
-- **Repository** (`infrastructure/repository/`): Interface que estende JpaRepository para operações de persistência.
-- **Exception Handler** (`infrastructure/handler/`): Tratamento global de exceções e erros da API.
-
----
-
-## 4. Modelagem e Estrutura do Banco de Dados
-
-A entidade Produto é mapeada para a tabela `produtos` no PostgreSQL com as seguintes colunas:
-- `id` (BIGSERIAL, PRIMARY KEY)
-- `nome_produto` (VARCHAR(100), UNIQUE, NOT NULL)
-- `preco` (DECIMAL(10, 2), NOT NULL)
-- `descricao` (VARCHAR(500))
-- `data_criacao` (TIMESTAMP WITH TIME ZONE, NOT NULL, AUTO-GENERATED)
-- `data_atualizacao` (TIMESTAMP WITH TIME ZONE, AUTO-UPDATED)
-
-A tabela possui:
-- Índice em `nome_produto` para melhor performance nas buscas
-- Row Level Security (RLS) habilitado com políticas públicas de leitura/escrita
-- Trigger automático para atualizar `data_atualizacao`
-
-A configuração do banco está em `application.properties`.
-
----
-
-## 5. Implementação do CRUD
-
-Todos os endpoints estão documentados com Swagger/OpenAPI em `/swagger-ui.html`.
-
-- **Create (POST `/api/v1/produtos`)**: Recebe um ProdutoRequestDTO via JSON, valida duplicidade de nome e persiste o produto. Retorna status 201 com o ProdutoResponseDTO.
-- **Read - Por ID (GET `/api/v1/produtos/{id}`)**: Busca produto pelo ID, lança `ProdutoNaoEncontradoException` se não encontrado.
-- **Read - Por Nome (GET `/api/v1/produtos/nome/{nome}`)**: Busca produto pelo nome (case-insensitive).
-- **Read - Listar com Paginação (GET `/api/v1/produtos?page=0&size=10`)**: Retorna produtos paginados.
-- **Read - Listar Todos (GET `/api/v1/produtos/listar/todos`)**: Retorna todos os produtos sem paginação.
-- **Update (PUT `/api/v1/produtos/{id}`)**: Atualiza um produto existente, validando duplicidade apenas se o nome for alterado.
-- **Delete (DELETE `/api/v1/produtos/{id}`)**: Remove o produto pelo ID.
-
----
-
-## 6. Funcionamento da Aplicação
-
-O fluxo da requisição é:
+### 🔙 Backend - Java Spring Boot
 ```
-Requisição HTTP → Controller → Service (com validações) → Repository (JPA) → PostgreSQL
+src/main/java/com/FATEC/cadastro_produtos/
+├── controller/              # Endpoints REST
+├── service/                 # Lógica de negócio
+├── presentation/dto/        # DTOs (requisição/resposta)
+└── infrastructure/
+    ├── entity/              # Modelos JPA
+    ├── repository/          # Acesso a dados
+    ├── exception/           # Exceções personalizadas
+    └── handler/             # Tratamento global de erros
 ```
 
-Validações aplicadas:
-- Nome do produto: obrigatório, 3-100 caracteres, único no banco
-- Preço: obrigatório, mínimo 0.01
-- Descrição: máximo 500 caracteres
+**Padrões:**
+- Arquitetura em camadas
+- Dependency Injection (Spring)
+- DTOs para isolamento de dados
+- Validações em camada de serviço
+- Tratamento centralizado de erros
 
-Exceções customizadas:
-- `ProdutoDuplicadoException`: Lançada quando o nome do produto já existe
-- `ProdutoNaoEncontradoException`: Lançada quando o produto não é encontrado
+### 🎨 Frontend - Next.js + React
+```
+app/                        # Páginas e layout
+components/                 # Componentes
+├── produto-form.tsx       # Formulário CRUD
+├── produto-modal.tsx      # Modal interativo
+├── produto-table.tsx      # Tabela de listagem
+└── ui/                    # Componentes base
+lib/                        # Serviços e tipos
+├── supabase.ts            # Cliente Supabase
+├── produtos-service.ts    # API client
+└── types/database.ts      # Types TypeScript
+```
 
-A aplicação roda na porta **8081** (`server.port = 8081`).
+### 🗄️ Database - PostgreSQL/Supabase
+```
+Tabela: produtos
+├── id (PK)
+├── nome_produto (UNIQUE)
+├── preco
+├── descricao (nullable)
+├── created_at
+└── updated_at
+```
 
-### Documentação da API
-- **Swagger UI**: http://localhost:8081/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8081/v3/api-docs
+---
+
+## 🛠️ Stack
+
+| Componente | Tecnologia |
+|-----------|-----------|
+| **Linguagem Backend** | Java 21 |
+| **Framework Backend** | Spring Boot 3 |
+| **ORM** | Spring Data JPA / Hibernate |
+| **Gerenciador Build** | Maven |
+| **Frontend Framework** | Next.js 16 |
+| **React** | React 19 |
+| **Linguagem Frontend** | TypeScript |
+| **Estilo** | Tailwind CSS |
+| **DB** | PostgreSQL (Supabase) |
+| **Client Supabase** | @supabase/ssr |
 
 ---
 
-## 7. Boas Práticas Aplicadas
+## 🚀 Início Rápido
 
-- **Injeção de dependência pelo construtor** via Lombok `@RequiredArgsConstructor`
-- **Separação clara de camadas**: Controller → Service → Repository → Entity
-- **DTOs** para transferência de dados entre camadas
-- **Transações** com `@Transactional` para operações consistentes
-- **Validações** com Jakarta Validation (`@NotBlank`, `@Size`, `@DecimalMin`)
-- **Uso de BigDecimal** para valores monetários
-- **Uso de Lombok** para redução de boilerplate (getters, setters, builders)
-- **Tratamento de exceções customizadas** com GlobalExceptionHandler
-- **Versionamento de API** em `/api/v1/`
-- **Documentação automática** com Swagger/OpenAPI
-- **CORS habilitado** para integração com frontends
-- **Timestamps automáticos** com `@PrePersist` e `@PreUpdate`
-- **Soft delete pattern** via triggers no banco de dados
+### 1. Backend (Java)
+```bash
+cd /workspaces/aula-lp
+./mvnw clean install
+./mvnw spring-boot:run
+```
+✅ Rodando em: `http://localhost:8080`
+
+### 2. Frontend (Node.js)
+```bash
+npm install
+npm run dev
+```
+✅ Disponível em: `http://localhost:3000`
+
+---
+
+## 📡 API REST
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/produtos` | Listar todos |
+| `GET` | `/api/v1/produtos/{id}` | Buscar por ID |
+| `POST` | `/api/v1/produtos` | Criar novo |
+| `PUT` | `/api/v1/produtos/{id}` | Atualizar |
+| `DELETE` | `/api/v1/produtos/{id}` | Deletar |
+
+### Exemplo de Request (POST)
+```json
+{
+  "nome_produto": "Notebook Dell",
+  "preco": 2499.99,
+  "descricao": "Notebook XPS 13 com processador Intel"
+}
+```
 
 ---
 
-## 8. Conclusão
+## 🔐 Validações
 
-O sistema cumpre integralmente os requisitos de um CRUD funcional e estruturado, pronto para evoluir com novas funcionalidades. O uso de Spring Boot e JPA simplificou tanto o desenvolvimento quanto a manutenção, e o projeto demonstra domínio em conceitos essenciais de desenvolvimento web com Java.
+- **Nome**: 3-100 caracteres, obrigatório, único
+- **Preço**: valor positivo, obrigatório
+- **Descrição**: opcional
 
 ---
+
+## ⚙️ Configuração
+
+### Variáveis de Ambiente (`.env.local`)
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anonima
+```
+
+### Backend (`application.properties`)
+- Conexão PostgreSQL configurada
+- Hibernate DDL: `update`
+- Transações gerenciadas pelo Spring
+
+---
+
+## 📝 Schema SQL
+
+```sql
+CREATE TABLE produtos (
+  id SERIAL PRIMARY KEY,
+  nome_produto VARCHAR(100) NOT NULL UNIQUE,
+  preco DECIMAL(10, 2) NOT NULL,
+  descricao TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+---
+
+## 🔧 Scripts úteis
+
+| Script | Descrição |
+|--------|-----------|
+| `/scripts/01-criar-tabela-produtos.sql` | Criação inicial da tabela |
+| `/scripts/02-limpar-e-recriar-tabela.sql` | Reset completo + RLS + Triggers |
+
+---
+
+## 🐛 Troubleshooting
+
+| Problema | Solução |
+|----------|---------|
+| Erro de schema cache | Execute `/scripts/02-limpar-e-recriar-tabela.sql` no Supabase |
+| Types desatualizados | `npm run generate-types` |
+| Conexão recusada | Verifique `.env.local` e credenciais Supabase |
+
+---
+
+## 📚 Links Úteis
+
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [Next.js](https://nextjs.org/docs)
+- [Supabase](https://supabase.com/docs)
+- [PostgreSQL](https://www.postgresql.org/docs)
+
+---
+
+**Desenvolvido para FATEC Carapicuíba - 2025**
