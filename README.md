@@ -44,49 +44,89 @@ O objetivo foi construir uma aplicação web funcional, estruturada em camadas, 
 
 ## 3. Arquitetura do Sistema
 
-- **Controller**: Expõe os endpoints REST e repassa as operações para a Service.
-- **Service**: Centraliza as regras de negócio, validações e tratamento de erros.
-- **Repository**: Interface que estende JpaRepository, com persistência nativa.
-- **Entity**: Define atributos do produto, como id, nomeProduto e preco.
+O projeto segue a arquitetura em camadas:
+
+- **Controller** (`controller/`): Expõe os endpoints REST com documentação Swagger/OpenAPI e valida requisições.
+- **Service** (`Service/`): Centraliza as regras de negócio, validações e tratamento de exceções customizadas.
+- **DTO** (`presentation/dto/`): Define objetos de transferência de dados (ProdutoRequestDTO e ProdutoResponseDTO).
+- **Entity** (`infrastructure/entity/`): Define a entidade Produto com atributos mapeados para o banco de dados.
+- **Repository** (`infrastructure/repository/`): Interface que estende JpaRepository para operações de persistência.
+- **Exception Handler** (`infrastructure/handler/`): Tratamento global de exceções e erros da API.
 
 ---
 
 ## 4. Modelagem e Estrutura do Banco de Dados
 
-A entidade Produto originou automaticamente a tabela `produto` no PostgreSQL, composta por:
-- `id` (SERIAL / Integer, PRIMARY KEY)
-- `nomeProduto` (VARCHAR, UNIQUE)
-- `preco` (NUMERIC)
-  
+A entidade Produto é mapeada para a tabela `produtos` no PostgreSQL com as seguintes colunas:
+- `id` (BIGSERIAL, PRIMARY KEY)
+- `nome_produto` (VARCHAR(100), UNIQUE, NOT NULL)
+- `preco` (DECIMAL(10, 2), NOT NULL)
+- `descricao` (VARCHAR(500))
+- `data_criacao` (TIMESTAMP WITH TIME ZONE, NOT NULL, AUTO-GENERATED)
+- `data_atualizacao` (TIMESTAMP WITH TIME ZONE, AUTO-UPDATED)
+
+A tabela possui:
+- Índice em `nome_produto` para melhor performance nas buscas
+- Row Level Security (RLS) habilitado com políticas públicas de leitura/escrita
+- Trigger automático para atualizar `data_atualizacao`
+
 A configuração do banco está em `application.properties`.
 
 ---
 
 ## 5. Implementação do CRUD
 
-- **Create (POST `/produto`)**: Recebe dados via JSON, utiliza `saveAndFlush` para persistência imediata.
-- **Read (GET `/produto?id=XX`)**: Busca produto pelo ID, lança exceção se não encontrado.
-- **Update (PUT `/produto?id=XX`)**: Atualização parcial, lógica de merge de campos.
-- **Delete (DELETE `/produto?id=XX`)**: Remove o produto pelo ID diretamente.
+Todos os endpoints estão documentados com Swagger/OpenAPI em `/swagger-ui.html`.
+
+- **Create (POST `/api/v1/produtos`)**: Recebe um ProdutoRequestDTO via JSON, valida duplicidade de nome e persiste o produto. Retorna status 201 com o ProdutoResponseDTO.
+- **Read - Por ID (GET `/api/v1/produtos/{id}`)**: Busca produto pelo ID, lança `ProdutoNaoEncontradoException` se não encontrado.
+- **Read - Por Nome (GET `/api/v1/produtos/nome/{nome}`)**: Busca produto pelo nome (case-insensitive).
+- **Read - Listar com Paginação (GET `/api/v1/produtos?page=0&size=10`)**: Retorna produtos paginados.
+- **Read - Listar Todos (GET `/api/v1/produtos/listar/todos`)**: Retorna todos os produtos sem paginação.
+- **Update (PUT `/api/v1/produtos/{id}`)**: Atualiza um produto existente, validando duplicidade apenas se o nome for alterado.
+- **Delete (DELETE `/api/v1/produtos/{id}`)**: Remove o produto pelo ID.
 
 ---
 
 ## 6. Funcionamento da Aplicação
 
-O fluxo é: requisição HTTP → Controller → Service → Repository (JPA) → Banco de dados.  
-A aplicação roda na porta 8081 (`server.port = 8081`).
+O fluxo da requisição é:
+```
+Requisição HTTP → Controller → Service (com validações) → Repository (JPA) → PostgreSQL
+```
+
+Validações aplicadas:
+- Nome do produto: obrigatório, 3-100 caracteres, único no banco
+- Preço: obrigatório, mínimo 0.01
+- Descrição: máximo 500 caracteres
+
+Exceções customizadas:
+- `ProdutoDuplicadoException`: Lançada quando o nome do produto já existe
+- `ProdutoNaoEncontradoException`: Lançada quando o produto não é encontrado
+
+A aplicação roda na porta **8081** (`server.port = 8081`).
+
+### Documentação da API
+- **Swagger UI**: http://localhost:8081/swagger-ui.html
+- **OpenAPI JSON**: http://localhost:8081/v3/api-docs
 
 ---
 
 ## 7. Boas Práticas Aplicadas
 
-- Injeção de dependência pelo construtor
-- Separação clara de camadas
-- Uso de BigDecimal para valores monetários
-- Uso de Lombok para redução de código
-- Validação e tratamento de erros explícitos
-- Persistência imediata com `saveAndFlush`
-- Atualização inteligente via padrão Builder
+- **Injeção de dependência pelo construtor** via Lombok `@RequiredArgsConstructor`
+- **Separação clara de camadas**: Controller → Service → Repository → Entity
+- **DTOs** para transferência de dados entre camadas
+- **Transações** com `@Transactional` para operações consistentes
+- **Validações** com Jakarta Validation (`@NotBlank`, `@Size`, `@DecimalMin`)
+- **Uso de BigDecimal** para valores monetários
+- **Uso de Lombok** para redução de boilerplate (getters, setters, builders)
+- **Tratamento de exceções customizadas** com GlobalExceptionHandler
+- **Versionamento de API** em `/api/v1/`
+- **Documentação automática** com Swagger/OpenAPI
+- **CORS habilitado** para integração com frontends
+- **Timestamps automáticos** com `@PrePersist` e `@PreUpdate`
+- **Soft delete pattern** via triggers no banco de dados
 
 ---
 

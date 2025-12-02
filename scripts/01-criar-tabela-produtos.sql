@@ -1,11 +1,11 @@
 -- Criar tabela produtos com campos apropriados
 CREATE TABLE IF NOT EXISTS public.produtos (
   id BIGSERIAL PRIMARY KEY,
-  nome_produto VARCHAR(255) NOT NULL,
-  descricao TEXT,
-  preco DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  nome_produto VARCHAR(100) NOT NULL UNIQUE,
+  descricao VARCHAR(500),
+  preco DECIMAL(10, 2) NOT NULL,
+  data_criacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Criar índice para melhor performance nas buscas
@@ -34,18 +34,18 @@ CREATE POLICY "Allow public delete" ON public.produtos
   FOR DELETE
   USING (true);
 
--- Criar função para atualizar updated_at automaticamente
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+-- Criar função para atualizar data_atualizacao automaticamente
+CREATE OR REPLACE FUNCTION update_data_atualizacao_column()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = NOW();
+  NEW.data_atualizacao = NOW();
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Criar trigger para atualizar updated_at
-DROP TRIGGER IF EXISTS update_produtos_updated_at ON public.produtos;
-CREATE TRIGGER update_produtos_updated_at
+-- Criar trigger para atualizar data_atualizacao
+DROP TRIGGER IF EXISTS update_produtos_data_atualizacao ON public.produtos;
+CREATE TRIGGER update_produtos_data_atualizacao
   BEFORE UPDATE ON public.produtos
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+  EXECUTE FUNCTION update_data_atualizacao_column();

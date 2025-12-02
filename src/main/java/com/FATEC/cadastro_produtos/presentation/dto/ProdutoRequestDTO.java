@@ -17,7 +17,7 @@ public class ProdutoRequestDTO {
     @NotBlank(message = "Nome do produto é obrigatório")
     @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     @Schema(description = "Nome único do produto", example = "Notebook Dell XPS 13")
-    private String nomeProduto;
+    private String nome_produto;
 
     @NotNull(message = "Preço é obrigatório")
     @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero")

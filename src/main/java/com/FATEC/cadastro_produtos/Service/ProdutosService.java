@@ -30,10 +30,10 @@ public class ProdutosService {
      */
     @Transactional
     public ProdutoResponseDTO salvarProduto(ProdutoRequestDTO requestDTO) {
-        validarNomeDuplicado(requestDTO.getNomeProduto());
+        validarNomeDuplicado(requestDTO.getNome_produto());
 
         Produto produto = Produto.builder()
-                .nomeProduto(requestDTO.getNomeProduto().trim())
+                .nome_produto(requestDTO.getNome_produto().trim())
                 .preco(requestDTO.getPreco())
                 .descricao(requestDTO.getDescricao() != null ? requestDTO.getDescricao().trim() : null)
                 .build();
@@ -59,9 +59,9 @@ public class ProdutosService {
      * Busca um produto pelo nome.
      */
     @Transactional(readOnly = true)
-    public ProdutoResponseDTO buscarPorNome(String nomeProduto) {
-        validarStringVazia(nomeProduto, "Nome do produto");
-        Produto produto = repository.findByNomeProdutoIgnoreCase(nomeProduto.trim())
+    public ProdutoResponseDTO buscarPorNome(String nome_produto) {
+        validarStringVazia(nome_produto, "Nome do produto");
+        Produto produto = repository.findByNomeProdutoIgnoreCase(nome_produto.trim())
                 .orElseThrow(() -> new ProdutoNaoEncontradoException(
                         String.format("Produto '%s' não encontrado", nomeProduto)
                 ));
@@ -98,11 +98,11 @@ public class ProdutosService {
                 ));
 
         // Validar nome duplicado apenas se estiver mudando o nome
-        if (!produtoExistente.getNomeProduto().equals(requestDTO.getNomeProduto())) {
-            validarNomeDuplicado(requestDTO.getNomeProduto());
+        if (!produtoExistente.getNome_produto().equals(requestDTO.getNome_produto())) {
+            validarNomeDuplicado(requestDTO.getNome_produto());
         }
 
-        produtoExistente.setNomeProduto(requestDTO.getNomeProduto().trim());
+        produtoExistente.setNome_produto(requestDTO.getNome_produto().trim());
         produtoExistente.setPreco(requestDTO.getPreco());
         produtoExistente.setDescricao(requestDTO.getDescricao() != null ? requestDTO.getDescricao().trim() : null);
 
@@ -153,7 +153,7 @@ public class ProdutosService {
     private ProdutoResponseDTO converterParaResponseDTO(Produto produto) {
         return ProdutoResponseDTO.builder()
                 .id(produto.getId())
-                .nomeProduto(produto.getNomeProduto())
+                .nome_produto(produto.getNome_produto())
                 .preco(produto.getPreco())
                 .descricao(produto.getDescricao())
                 .dataCriacao(produto.getDataCriacao())

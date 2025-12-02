@@ -30,7 +30,7 @@ public class Produto {
     @NotBlank(message = "Nome do produto não pode ser vazio")
     @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     @Schema(description = "Nome único do produto", example = "Notebook Dell")
-    private String nomeProduto;
+    private String nome_produto;
 
     @Column(name = "preco", nullable = false)
     @NotNull(message = "Preço não pode ser nulo")

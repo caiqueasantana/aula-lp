@@ -18,7 +18,7 @@ public class ProdutoResponseDTO {
     private Integer id;
 
     @Schema(description = "Nome do produto", example = "Notebook Dell XPS 13")
-    private String nomeProduto;
+    private String nome_produto;
 
     @Schema(description = "Preço do produto", example = "2499.99")
     private BigDecimal preco;
